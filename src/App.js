@@ -1,26 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { lazy, Suspense, Fragment } from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+} from "react-router-dom";
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { alertActions } from './middlewares/actions/AlertAction';
+import { PrivateRoute, PublicRoute } from './routes/RouteAccess';
+const Index = lazy(() => import('./pages/index'));
+const Login = lazy(() => import('./pages/login/index'));
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+        <Suspense fallback={<Fragment />}>
+          <Switch>
+            {/* <Route exact path="/" render={() => <Redirect to="/home" />} /> */}
+          <PublicRoute restricted={true} path="/login" component={Index} />
+            <PrivateRoute path="/" component={Index} />
+            {/* <Route component={Error} /> */}
+          </Switch>
+        </Suspense>
+    </Router>
   );
 }
 
-export default App;
+const mapDispatchToProps = dispatch => {
+  return bindActionCreators(Object.assign({}, alertActions), dispatch);
+};
+
+const mapStateToProps = state => {
+  const { alert } = state;
+  return { alert };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
